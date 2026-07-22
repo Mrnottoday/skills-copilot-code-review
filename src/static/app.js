@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         currentUser = JSON.parse(savedUser);
         updateAuthUI();
-        validateUserSession(currentUser.username);
+        validateUserSession();
       } catch (error) {
         console.error("Error parsing saved user", error);
         logout();
@@ -126,11 +126,22 @@ document.addEventListener("DOMContentLoaded", () => {
     updateAuthBodyClass();
   }
 
-  async function validateUserSession(username) {
+  function buildAuthHeaders(extraHeaders = {}) {
+    if (!currentUser || !currentUser.session_token) {
+      return { ...extraHeaders };
+    }
+
+    return {
+      ...extraHeaders,
+      Authorization: `Bearer ${currentUser.session_token}`,
+    };
+  }
+
+  async function validateUserSession() {
     try {
-      const response = await fetch(
-        `/auth/check-session?username=${encodeURIComponent(username)}`
-      );
+      const response = await fetch("/auth/check-session", {
+        headers: buildAuthHeaders(),
+      });
 
       if (!response.ok) {
         logout();
@@ -208,6 +219,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function logout() {
+    if (currentUser && currentUser.session_token) {
+      fetch("/auth/logout", {
+        method: "POST",
+        headers: buildAuthHeaders(),
+      }).catch((error) => {
+        console.error("Error logging out server session:", error);
+      });
+    }
+
     currentUser = null;
     localStorage.removeItem("currentUser");
     updateAuthUI();
@@ -337,11 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
     announcementsAdminList.innerHTML = "<p>Loading announcements...</p>";
 
     try {
-      const response = await fetch(
-        `/announcements/manage?teacher_username=${encodeURIComponent(
-          currentUser.username
-        )}`
-      );
+      const response = await fetch("/announcements/manage", {
+        headers: buildAuthHeaders(),
+      });
 
       const announcements = await response.json();
 
@@ -466,16 +484,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const method = announcementId ? "PUT" : "POST";
 
     try {
-      const response = await fetch(
-        `${endpoint}?teacher_username=${encodeURIComponent(currentUser.username)}`,
-        {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(endpoint, {
+        method,
+        headers: buildAuthHeaders({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(payload),
+      });
 
       const result = await response.json();
 
@@ -507,11 +522,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `/announcements/${encodeURIComponent(
-          announcementId
-        )}?teacher_username=${encodeURIComponent(currentUser.username)}`,
+        `/announcements/${encodeURIComponent(announcementId)}`,
         {
           method: "DELETE",
+          headers: buildAuthHeaders(),
         }
       );
 

@@ -7,10 +7,11 @@ from typing import Any, Dict, List, Optional
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, field_validator
 
-from ..database import announcements_collection, teachers_collection
+from .auth import validate_session_token
+from ..database import announcements_collection
 
 router = APIRouter(
     prefix="/announcements",
@@ -56,10 +57,7 @@ def parse_iso_date(value: str) -> date:
     try:
         return date.fromisoformat(value)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=422,
-            detail="Dates must use YYYY-MM-DD format"
-        ) from exc
+        raise ValueError("Dates must use YYYY-MM-DD format") from exc
 
 
 def ensure_date_range(start_date: Optional[str], expiration_date: str) -> None:
@@ -68,19 +66,12 @@ def ensure_date_range(start_date: Optional[str], expiration_date: str) -> None:
     if start_date:
         start = parse_iso_date(start_date)
         if expiration < start:
-            raise HTTPException(status_code=422, detail="Expiration must be after start date")
+            raise ValueError("Expiration must be after start date")
 
 
-def require_signed_in_user(teacher_username: Optional[str]) -> Dict[str, Any]:
-    """Require a valid signed-in teacher account."""
-    if not teacher_username:
-        raise HTTPException(status_code=401, detail="Authentication required")
-
-    teacher = teachers_collection.find_one({"_id": teacher_username})
-    if not teacher:
-        raise HTTPException(status_code=401, detail="Invalid teacher credentials")
-
-    return teacher
+def require_signed_in_user(authorization: Optional[str]) -> Dict[str, Any]:
+    """Require a valid bearer session and return user profile."""
+    return validate_session_token(authorization)
 
 
 def serialize_announcement(announcement: Dict[str, Any]) -> Dict[str, Any]:
@@ -116,20 +107,23 @@ def get_active_announcements() -> List[Dict[str, Any]]:
 
 
 @router.get("/manage", response_model=List[Dict[str, Any]])
-def get_all_announcements(teacher_username: Optional[str] = Query(None)) -> List[Dict[str, Any]]:
+def get_all_announcements(authorization: Optional[str] = Header(None)) -> List[Dict[str, Any]]:
     """Get all announcements for management views (requires auth)."""
-    require_signed_in_user(teacher_username)
+    require_signed_in_user(authorization)
 
     announcements = announcements_collection.find({}).sort("expiration_date", 1)
     return [serialize_announcement(doc) for doc in announcements]
 
 
 @router.post("", response_model=Dict[str, Any])
-def create_announcement(payload: AnnouncementPayload, teacher_username: Optional[str] = Query(None)) -> Dict[str, Any]:
+def create_announcement(payload: AnnouncementPayload, authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
     """Create a new announcement (requires auth)."""
-    require_signed_in_user(teacher_username)
+    require_signed_in_user(authorization)
 
-    ensure_date_range(payload.start_date, payload.expiration_date)
+    try:
+        ensure_date_range(payload.start_date, payload.expiration_date)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     now_iso = date.today().isoformat()
     document = {
@@ -150,12 +144,15 @@ def create_announcement(payload: AnnouncementPayload, teacher_username: Optional
 def update_announcement(
     announcement_id: str,
     payload: AnnouncementPayload,
-    teacher_username: Optional[str] = Query(None)
+    authorization: Optional[str] = Header(None)
 ) -> Dict[str, Any]:
     """Update an existing announcement (requires auth)."""
-    require_signed_in_user(teacher_username)
+    require_signed_in_user(authorization)
 
-    ensure_date_range(payload.start_date, payload.expiration_date)
+    try:
+        ensure_date_range(payload.start_date, payload.expiration_date)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     try:
         object_id = ObjectId(announcement_id)
@@ -183,9 +180,9 @@ def update_announcement(
 
 
 @router.delete("/{announcement_id}", response_model=Dict[str, str])
-def delete_announcement(announcement_id: str, teacher_username: Optional[str] = Query(None)) -> Dict[str, str]:
+def delete_announcement(announcement_id: str, authorization: Optional[str] = Header(None)) -> Dict[str, str]:
     """Delete an announcement (requires auth)."""
-    require_signed_in_user(teacher_username)
+    require_signed_in_user(authorization)
 
     try:
         object_id = ObjectId(announcement_id)

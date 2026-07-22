@@ -37,7 +37,8 @@ FastAPI application for activity registration and school announcements.
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
 | POST | `/auth/login?username={username}&password={password}` | Sign in as a teacher/admin |
-| GET | `/auth/check-session?username={username}` | Validate current session identity |
+| GET | `/auth/check-session` | Validate current bearer session identity |
+| POST | `/auth/logout` | Invalidate current bearer session |
 
 ### Activities
 
@@ -53,10 +54,12 @@ FastAPI application for activity registration and school announcements.
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
 | GET | `/announcements` | List currently active announcements for all users |
-| GET | `/announcements/manage?teacher_username={teacher}` | List all announcements for management (auth required) |
-| POST | `/announcements?teacher_username={teacher}` | Create announcement (auth required) |
-| PUT | `/announcements/{announcement_id}?teacher_username={teacher}` | Update announcement (auth required) |
-| DELETE | `/announcements/{announcement_id}?teacher_username={teacher}` | Delete announcement (auth required) |
+| GET | `/announcements/manage` | List all announcements for management (auth required) |
+| POST | `/announcements` | Create announcement (auth required) |
+| PUT | `/announcements/{announcement_id}` | Update announcement (auth required) |
+| DELETE | `/announcements/{announcement_id}` | Delete announcement (auth required) |
+
+Announcement management endpoints require `Authorization: Bearer {session_token}` from `/auth/login`.
 
 ## Announcement Rules
 
@@ -71,3 +74,4 @@ MongoDB collections are initialized in `src/backend/database.py` with sample dat
 - `activities`
 - `teachers`
 - `announcements`
+- `sessions`
