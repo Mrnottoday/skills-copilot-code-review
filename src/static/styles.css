@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@600;700&display=swap");
+
 /* Color palette */
 :root {
   /* Primary colors */
@@ -36,11 +38,11 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: "Manrope", "Segoe UI", sans-serif;
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Manrope", "Segoe UI", sans-serif;
   line-height: 1.4;
   color: var(--text-primary);
   max-width: 1200px;
@@ -54,7 +56,7 @@ header {
   text-align: center;
   padding: 12px 0;
   margin-bottom: 15px;
-  background-color: var(--primary);
+  background: radial-gradient(circle at top right, #2f4fbe 0%, var(--primary) 55%, #121a5d 100%);
   color: var(--primary-text);
   border-radius: 5px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
@@ -67,6 +69,8 @@ header {
 header h1 {
   margin-bottom: 5px;
   font-size: 1.6rem;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  letter-spacing: 0.4px;
 }
 
 header h2 {
@@ -666,9 +670,214 @@ footer {
 }
 
 .announcement-banner {
-  background-color: var(--success);
+  background: linear-gradient(120deg, #0f7f53, #19905f);
   color: white;
-  text-align: center;
-  padding: 15px;
-  font-weight: bold;
+  text-align: left;
+  padding: 14px 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(15, 127, 83, 0.18);
+  margin-bottom: 12px;
+}
+
+.announcement-banner-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.announcement-kicker {
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  opacity: 0.9;
+}
+
+.announcement-banner-content {
+  display: grid;
+  gap: 6px;
+}
+
+.announcement-item {
+  border-left: 3px solid rgba(255, 255, 255, 0.65);
+  padding-left: 9px;
+}
+
+.announcement-item-title {
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.announcement-item-message {
+  font-size: 0.84rem;
+  opacity: 0.97;
+}
+
+.announcement-item-dates {
+  font-size: 0.72rem;
+  opacity: 0.88;
+}
+
+#user-status {
+  gap: 8px;
+}
+
+#manage-announcements-button {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+#manage-announcements-button:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.announcements-modal-content {
+  width: 95%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.close-announcements-modal {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  padding: 0;
+  line-height: 1;
+}
+
+.announcements-subtitle {
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.announcements-admin-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.announcement-admin-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  animation: fadeInUp 0.25s ease;
+}
+
+.announcement-admin-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.announcement-admin-title {
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.announcement-admin-message {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.announcement-admin-meta {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.announcement-admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.announcement-admin-actions button {
+  padding: 5px 9px;
+  border-radius: 14px;
+}
+
+.edit-announcement-button {
+  background: #1b73c6;
+}
+
+.delete-announcement-button {
+  background: #b3261e;
+}
+
+.announcement-form {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.announcement-form textarea,
+.announcement-form input[type="text"],
+.announcement-form input[type="date"] {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px;
+  font-size: 0.84rem;
+  background-color: #fff;
+}
+
+.announcement-form textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.announcement-date-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.announcement-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.secondary-button {
+  background: #eceff4;
+  color: #334155;
+}
+
+.secondary-button:hover {
+  background: #dce2eb;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  #user-controls {
+    position: static;
+    margin-top: 8px;
+  }
+
+  #user-status {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .announcement-date-grid {
+    grid-template-columns: 1fr;
+  }
 }
